@@ -1,3 +1,4 @@
+import { Link } from "@mui/icons-material";
 import { Avatar, Button, Card, CardActions, CardContent, CardHeader, CardMedia, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
 import { Product } from "../../app/models/product";
 
@@ -35,7 +36,7 @@ export default function ProductCard({ product }: Props) {
             </CardContent>
             <CardActions>
                 <Button size="small">Add to Card</Button>
-                <Button size="small">View</Button>
+                <Button component={Link} to={`/catalog/${product.id}`}>View</Button>
             </CardActions>
         </Card>
     )
