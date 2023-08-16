@@ -6,7 +6,7 @@ interface Props {
     products: Product[];
 }
 
-export default function ProductList({products}: Props) {
+export default function ProductList({ products }: Props) {
     return (
         <Grid container spacing={4}>
             {products.map(product => (
@@ -15,5 +15,5 @@ export default function ProductList({products}: Props) {
                 </Grid>
             ))}
         </Grid>
-    )
+    );
 }
