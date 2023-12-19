@@ -1,4 +1,4 @@
-﻿using API.Data;
+using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -41,11 +41,11 @@ namespace API.Controllers
 
             if (result) return StatusCode(201);
 
-            return BadRequest(new ProblemDetails{Title = "Problem saving item to basket"})
+            return BadRequest(new ProblemDetails{Title = "Problem saving item to basket"});
         }
 
         [HttpDelete]
-        public async Task<Basket> RemoveBasketItem(int productId, int quantity)
+        public async Task<ActionResult> RemoveBasketItem(int productId, int quantity)
         {   
             return Ok();
         }
@@ -60,8 +60,8 @@ namespace API.Controllers
 
         private Basket CreateBasket()
         {
-            var buyerId = Guid.NewGuid().ToString{};
-            var cookieOptions = new CookieOptions{IsEssential = true, Expires = DateTime.Now.AddDays};
+            var buyerId = Guid.NewGuid().ToString();
+            var cookieOptions = new CookieOptions{IsEssential = true, Expires = DateTime.Now.AddDays(30)};
             Response.Cookies.Append("buyerId", buyerId, cookieOptions);
             var basket = new Basket{BuyerId = buyerId};
             _context.Baskets.Add(basket);
@@ -69,10 +69,3 @@ namespace API.Controllers
         }
     }
 }
-
-
-
-
-
-
-
