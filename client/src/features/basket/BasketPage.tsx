@@ -1,7 +1,8 @@
 import { Add, Delete, Remove } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
-import { Box, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import agent from "../../app/api/agent";
 import { useStoreContext } from "../../app/context/StoreContext";
 
@@ -32,7 +33,8 @@ export default function BasketPage() {
 if (!basket) return <Typography variant="h3">Your basket is empty</Typography>
 
 return (
-  <TableContainer component={Paper}>
+<>
+    <TableContainer component={Paper}>
     <Table sx={{ minWidth: 650 }} aria-label="simple table">
       <TableHead>
         <TableRow>
@@ -57,16 +59,16 @@ return (
             </TableCell>
             <TableCell align="right">${(item.price / 100).toFixed(2)}</TableCell>
             <TableCell align="center">
-              <LoadingButton 
-                loading={status.loading && status.name === 'rem' + item.productId} 
+              <LoadingButton
+                loading={status.loading && status.name === 'rem' + item.productId}
                 onClick={() => handleRemoveItem(item.productId, 1, 'rem' + item.productId)}
                 color='error'
               >
                 <Remove />
               </LoadingButton>
               {item.quantity}
-              <LoadingButton 
-                loading={status.loading && status.name === 'add' + item.productId} 
+              <LoadingButton
+                loading={status.loading && status.name === 'add' + item.productId}
                 onClick={() => handleAddItem(item.productId, 'add' + item.productId)}
                 color='secondary'
               >
@@ -75,8 +77,8 @@ return (
             </TableCell>
             <TableCell align="right">{((item.price / 100) * item.quantity).toFixed(2)}</TableCell>
             <TableCell align="right">
-              <LoadingButton 
-                loading={status.loading && status.name === 'del' + item.productId} 
+              <LoadingButton
+                loading={status.loading && status.name === 'del' + item.productId}
                 onClick={() => handleRemoveItem(item.productId, item.quantity, 'del' + item.productId)}
                 color='error'
               >
@@ -88,5 +90,20 @@ return (
       </TableBody>
     </Table>
   </TableContainer>
+  <Grid container>
+      <Grid item xs={3} />
+      <Grid item xs={6}>
+        <Button
+          component={Link}
+          to='/checkout'
+          variant='contained'
+          size='large'
+          fullWidth
+        >
+            Checkout
+        </Button>
+      </Grid>
+  </Grid>
+</>
 )
 }
