@@ -1,30 +1,34 @@
-import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography, useStepContext } from "@mui/material";
-import axios from "axios";
+import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Product } from "../../app/models/product";
-import agent from "../../app/api/agent";
 import NotFound from "../../app/errors/NotFound";
 import LoadingComponent from "../../app/layout/LoadingComponent";
-import { useStoreContext } from "../../app/context/StoreContext";
 import { LoadingButton } from "@mui/lab";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
+import { addBasketItemAsync, removeBasketItemAsync } from "../basket/basketSlice";
+import { fetchProductAsync, productSelectors } from "./catalogSlice";
 
 export default function ProductDetails() {
-    const {basket, setBasket, removeItem} = useStoreContext();
-    const {id} = useParams<{id: string}>();
-    const [product, setProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { basket, status } = useAppSelector(state => state.basket);
+    const dispatch = useAppDispatch();
+    const { id } = useParams<{ id: string }>();
+    // Convert 'id' from string to number, handling potential 'undefined'
+    const productId = id !== undefined ? parseInt(id, 10) : undefined;
+
+    // Always call the hook unconditionally
+    const product = useAppSelector(state =>
+        // Inside the selector, check if 'productId' is a number before attempting to select
+        productId !== undefined ? productSelectors.selectById(state, productId) : undefined
+    );
+
+    const { status: productStatus } = useAppSelector(state => state.catalog);
     const [quantity, setQuantity] = useState(0);
-    const [submitting, setSubmitting] = useState(false);
     const item = basket?.items.find(i => i.productId === product?.id);
 
     useEffect(() => {
         if (item) setQuantity(item.quantity);
-        id && agent.Catalog.details(parseInt(id))
-            .then(response => setProduct(response))
-            .catch(error => console.log(error))
-            .finally(() => setLoading(false));
-    }, [id, item])
+        if (!product && id) dispatch(fetchProductAsync(parseInt(id)));
+    }, [id, item, dispatch, product])
 
     function handleInputChange(event: any) {
         if (event.target.value > 0) {
@@ -33,23 +37,16 @@ export default function ProductDetails() {
     }
 
     function handleUpdateCart() {
-        setSubmitting(true);
         if (!item || quantity > item.quantity) {
             const updatedQunatity = item ? quantity - item.quantity : quantity;
-            agent.Basket.addItem(product?.id!, updatedQunatity)
-                .then(basket => setBasket(basket))
-                .catch(error => console.log(error))
-                .finally(() => setSubmitting(false))
+            dispatch(addBasketItemAsync({ productId: product?.id!, quantity: updatedQunatity }))
         } else {
             const updatedQunatity = item.quantity - quantity;
-            agent.Basket.removeItem(product?.id!, updatedQunatity)
-                .then(() => removeItem(product?.id!, updatedQunatity))
-                .catch(error => console.log(error))
-                .finally(() => setSubmitting(false));
+            dispatch(removeBasketItemAsync({ productId: product?.id!, quantity: updatedQunatity }))
         }
     }
 
-    if (loading) return <LoadingComponent message='Loading product...' />
+    if (productStatus.includes('pending')) return <LoadingComponent message='Loading product...' />
     if (!product) return <NotFound />
 
     return (
@@ -59,7 +56,7 @@ export default function ProductDetails() {
             </Grid>
             <Grid item xs={6}>
                 <Typography variant="h3">{product.name}</Typography>
-                <Divider sx={{mb: 2}} />
+                <Divider sx={{ mb: 2 }} />
                 <Typography variant="h4" color='secondary'>${(product.price / 100).toFixed(2)}</Typography>
                 <TableContainer>
                     <Table>
@@ -89,7 +86,7 @@ export default function ProductDetails() {
                 </TableContainer>
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <TextField 
+                        <TextField
                             onChange={handleInputChange}
                             variant='outlined'
                             type='number'
@@ -100,10 +97,10 @@ export default function ProductDetails() {
                     </Grid>
                     <Grid item xs={6}>
                         <LoadingButton
-                            disabled={item?.quantity === quantity || !item && quantity === 0} 
-                            loading={submitting}
-                            onClick={handleInputChange}
-                            sx={{height: '55px'}}
+                            disabled={item?.quantity === quantity || !item && quantity === 0}
+                            loading={status.includes('pending')}
+                            onClick={handleUpdateCart}
+                            sx={{ height: '55px' }}
                             color='primary'
                             size='large'
                             variant='contained'
