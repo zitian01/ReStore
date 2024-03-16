@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { request } from "http";
 import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 
@@ -22,7 +21,7 @@ axios.interceptors.response.use(async Response => {
                     const modelStateErrors: string[] = [];
                     for (const key in data.erros) {
                         if (data.error[key]) {
-                            modelStateErrors.push(data.errors[key])
+                            modelStateErrors.push(data.errors[key]);
                         }
                     }
                     throw modelStateErrors.flat();
@@ -43,14 +42,14 @@ axios.interceptors.response.use(async Response => {
     })
 
 const requests = {
-    get: (url: string) => axios.get(url).then(respondBody),
+    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(respondBody),
     post: (url: string, body: {}) => axios.post(url, body).then(respondBody),
     put: (url: string, body: {}) => axios.put(url, body).then(respondBody),
     delete: (url: string) => axios.delete(url).then(respondBody)
 }
 
 const Catalog = {
-    list: () => requests.get('products'),
+    list: (params: URLSearchParams) => requests.get('products', params),
     details: (id: number) => requests.get(`products/${id}`),
     fetchFilters: () => requests.get('products/filters')
 }

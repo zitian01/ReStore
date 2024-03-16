@@ -15,11 +15,23 @@ interface CatalogState {
 
 const productsAdapter = createEntityAdapter<Product>();
 
-export const fetchProductsAsync = createAsyncThunk<Product []>(
+function getAxiosParams(productParams: ProducrtParams) {
+    const params = new URLSearchParams();
+    params.append('pageNumber', productParams.pageNumber.toString());
+    params.append('pageSize', productParams.pageSize.toString());
+    params.append('orderBy', productParams.orderBy);
+    if (productParams.searchTerm) params.append('searchTerm', productParams.searchTerm);
+    if (productParams.brands) params.append('brands', productParams.brands.toString());
+    if (productParams.types) params.append('types', productParams.types.toString());
+    return params;
+}
+
+export const fetchProductsAsync = createAsyncThunk<Product [], void, {state: RootState}>(
     'catalog/fetchProducsAsync',
     async (_, thunkAPI) => {
+        const params = getAxiosParams(thunkAPI.getState().catalog.productParams);
         try {
-            return await agent.Catalog.list();
+            return await agent.Catalog.list(params);
         } catch (error: any) {
             return thunkAPI.rejectWithValue({error: error.data})
         }
@@ -30,7 +42,7 @@ export const fetchProductAsync = createAsyncThunk<Product, number>(
     'catalog/fetchProducAsync',
     async (productId, thunkAPI) => {
         try {
-            return await agent.Catalog.details(productId)
+            return await agent.Catalog.details(productId);
         } catch (error: any) {
             return thunkAPI.rejectWithValue({error: error.data})
         }
